@@ -9,6 +9,7 @@ using PartagesWeb.API.Dtos.GestionPages;
 using PartagesWeb.API.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,7 +29,7 @@ namespace PartagesWeb.APIUnitTests
         /// <summary>
         /// Constructeur pour l'écriture "Output" des tests et choix de la base de donnée ainsi que si on veut afficher le detail des tests unitaires
         /// </summary>
-        /// <param name="output">Choix de la base de donnée (en mémoire ou SqlServeur)</param>
+        /// <param name="output">Écriture "Output" dans les tests unitaires</param>
         public GestionPagesUnitTests(ITestOutputHelper output)
         {
             _output = output;
@@ -175,10 +176,46 @@ namespace PartagesWeb.APIUnitTests
                 sections = await GetArbreCompletSections(repository);
                 Assert.True(section06.Position > section03.Position, "sections06.Position > section03.Position");
 
+                // Delete section01
+                await DeleteSection(section01.Id, repository);
+                await TesterDeletedSection(context);
+                sections = await GetArbreCompletSections(repository);
+
+                // Delete section02
+                await DeleteSection(section02.Id, repository);
+                await TesterDeletedSection(context);
+                sections = await GetArbreCompletSections(repository);
+
+                // Delete section03
+                await DeleteSection(section03.Id, repository);
+                await TesterDeletedSection(context);
+                sections = await GetArbreCompletSections(repository);
+
+                // Delete section04
+                await DeleteSection(section04.Id, repository);
+                await TesterDeletedSection(context);
+                sections = await GetArbreCompletSections(repository);
+
+                // Delete section05
+                await DeleteSection(section05.Id, repository);
+                await TesterDeletedSection(context);
+                sections = await GetArbreCompletSections(repository);
+
+                // Delete section06
+                await DeleteSection(section06.Id, repository);
+                await TesterDeletedSection(context);
+                sections = await GetArbreCompletSections(repository);
+
+                // Delete section07
+                await DeleteSection(section07.Id, repository);
+                await TesterDeletedSection(context);
+                sections = await GetArbreCompletSections(repository);
+
                 // var test = context.Sections.CountAsync(s => s.Nom == "Informatique web");
-                // Assert.Equal(1, 1);
             }
         }
+
+
 
         /// <summary>
         /// Equivalent dans SectionsController de public async Task<IActionResult> Create(SectionForCreateDto sectionForCreateDto)
@@ -235,6 +272,48 @@ namespace PartagesWeb.APIUnitTests
                 }
             }
             return sections;
+        }
+        /// <summary>
+        /// Equivalant dans SectionsController de public async Task<IActionResult> Delete(int id)
+        /// </summary>
+        /// <param name="id">Id à effacer</param>
+        /// <returns></returns>
+        private async Task DeleteSection(int id, GestionPagesRepository repository)
+        {
+            _output.WriteLine("DeleteSection({0}, repository)", id);
+            var item = await repository.GetSection(id);
+            if (item != null)
+            {
+                repository.Delete(item);
+            }
+            await repository.SortPositionSections();
+        }
+        /// <summary>
+        /// Tester si les positions hors ligne et en ligne ne sont pas corrompues
+        /// </summary>
+        /// <param name="context">DataContext</param>
+        /// <returns></returns>
+        private async Task TesterDeletedSection(DataContext context)
+        {
+            var sections = await context.Sections
+                .OrderBy(x => x.SwHorsLigne)
+                .ThenBy(x => x.Position)
+                .ToListAsync();
+            var i = 0;
+            var j = 0;
+            foreach (var unite in sections)
+            {
+                if (unite.SwHorsLigne == true)
+                {
+                    i++;
+                    Assert.Equal(unite.Position, i);
+                }
+                else
+                {
+                    j++;
+                    Assert.Equal(unite.Position, j);
+                }
+            }
         }
         /// <summary>
         /// Equivalent dans SectionsController de public async Task<IActionResult> Monter(int id)
