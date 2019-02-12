@@ -57,7 +57,7 @@ namespace PartagesWeb.APIUnitTests
             return builder;
         }
         /// <summary>
-        /// Ajoute 5 sections et effectue quelques tests
+        /// Ajoute 7 sections et effectue quelques tests en rapport avec SectionsController
         /// </summary>
         /// <returns></returns>
         [Fact]
